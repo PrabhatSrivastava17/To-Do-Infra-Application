@@ -1,13 +1,3 @@
-variable "resource_group_name" {
-  description = "The name of the resource group in which to create the virtual machine."
-  type        = string
-}
-
-variable "location" {
-  description = "The Azure region where the virtual machine will be created."
-  type        = string
-}
-
 variable "vm_name" {
   description = "The name of the virtual machine."
   type        = string
@@ -62,7 +52,17 @@ variable "vnet_name" {
   description = "Vnet ka naam"
   type        = string
 }
-
-variable "key_vault_name" {}
-variable "username_secret_name" {}
-variable "password_secret_name" {}
+variable "admin_password"{}
+  variable "resource_group_name" {
+    description = "The name of the resource group in which the network interface is located."
+    type        = string
+  }
+  variable "location" {
+    description = "The Azure region where the VM will be created."
+    type        = string
+  }
+  variable "nsg_name" {
+    description = "The name of the Network Security Group."
+    type        = string
+    
+  }
