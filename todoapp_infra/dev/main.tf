@@ -6,7 +6,7 @@ module "resource_group" {
 
 module "virtual_network" {
   depends_on = [module.resource_group]
-  source     = "../modules/azurerm_virtual_network"
+  source     = "../../modules/azurerm_virtual_network"
 
   virtual_network_name     = "dev-vnet-todoapp"
   virtual_network_location = "centralindia"
@@ -24,134 +24,102 @@ module "frontend_subnet" {
   address_prefixes     = ["10.0.1.0/24"]
 }
 
-module "birju_subnet" {
-  depends_on = [module.virtual_network]
-  source     = "../../modules/azurerm_subnet"
-
-  resource_group_name  = "dev-rg-birju"
-  virtual_network_name = "dev-vnet-birju"
-  subnet_name          = "dev-birju-subnet"
-  address_prefixes     = ["10.0.60.0/24"]
-}
-module "tirju_subnet" {
-  depends_on = [module.virtual_network]
-  source     = "../../modules/azurerm_subnet"
-
-  resource_group_name  = "dev-rg-tirju"
-  virtual_network_name = "dev-vnet-ttirju"
-  subnet_name          = "dev-tirju-subnet"
-  address_prefixes     = ["10.0.7.0/24"]
-}
-
-module "backend_subnet" {
-  depends_on = [module.virtual_network]
-  source     = "../../modules/azurerm_subnet"
-
-  resource_group_name  = "dev-rg-todoapp"
-  virtual_network_name = "dev-vnet-todoapp"
-  subnet_name          = "dev-backend-subnet"
-  address_prefixes     = ["10.0.2.0/24"]
-}
-
-module "public_ip_frontend" {
-  depends_on          = [module.resource_group]
-  source              = "../../modules/azurerm_public_ip"
-  public_ip_name      = "dev-pip-todoapp-frontend"
-  resource_group_name = "dev-rg-todoapp"
-  location            = "centralindia"
-  allocation_method   = "Static"
-}
-
-module "frontend_vm" {
-  depends_on = [module.frontend_subnet, module.key_vault, module.vm_username, module.vm_password, module.public_ip_frontend]
+module "chinki_vm" {
+  depends_on = [module.frontend_subnet, module.virtual_network]
   source     = "../../modules/azurerm_virtual_machine"
 
   resource_group_name  = "dev-rg-todoapp"
   location             = "centralindia"
-  vm_name              = "dev-vm-frontend2"
+  vm_name              = "chinki-vm"
   vm_size              = "Standard_B1s"
   admin_username       = "devopsadmin"
+  admin_password       = "Admin@1234567"
   image_publisher      = "Canonical"
   image_offer          = "0001-com-ubuntu-server-focal"
   image_sku            = "20_04-lts"
   image_version        = "latest"
-  nic_name             = "dev-nic-vm-frontend2"
-  frontend_ip_name     = "dev-pip-todoapp-frontend"
+  nic_name             = "dev-nic-chinki"
+  frontend_ip_name     = "dev-pip-todoapp-lb"
   vnet_name            = "dev-vnet-todoapp"
   frontend_subnet_name = "dev-frontend-subnet"
-  key_vault_name       = "sonamjikitijori"
-  username_secret_name = "dev-vm-username"
-  password_secret_name = "dev-vm-password"
+  nsg_name             = "chinki-nsg"
 }
 
-# module "public_ip_backend" {
-#   source              = "../modules/azurerm_public_ip"
-#   public_ip_name      = "pip-todoapp-backend"
-#   resource_group_name = "rg-todoapp"
-#   location            = "centralindia"
-#   allocation_method   = "Static"
-# }
+module "pinki_vm" {
+  depends_on = [module.frontend_subnet, module.virtual_network]
+  source     = "../../modules/azurerm_virtual_machine"
 
-# module "backend_vm" {
-#   depends_on = [module.backend_subnet]
-#   source     = "../modules/azurerm_virtual_machine"
-
-#   resource_group_name  = "rg-todoapp"
-#   location             = "centralindia"
-#   vm_name              = "vm-backend"
-#   vm_size              = "Standard_B1s"
-#   admin_username       = "devopsadmin"
-#   admin_password       = "P@ssw0rd1234!"
-#   image_publisher      = "Canonical"
-#   image_offer          = "0001-com-ubuntu-server-focal"
-#   image_sku            = "20_04-lts"
-#   image_version        = "latest"
-#   nic_name             = "nic-vm-backend"
-#   virtual_network_name = "vnet-todoapp"
-#   subnet_name          = "backend-subnet"
-#   pip_name             = "pip-todoapp-backend"
-# }
-
-# module "sql_server" {
-#   source              = "../modules/azurerm_sql_server"
-#   sql_server_name     = "todosqlserver008"
-#   resource_group_name = "rg-todoapp"
-#   location            = "centralindia"
-#   # secret ko rakhne ka sudhar - Azure Key Vault
-#   administrator_login          = "sqladmin"
-#   administrator_login_password = "P@ssw0rd1234!"
-# }
-
-# module "sql_database" {
-#   depends_on          = [module.sql_server]
-#   source              = "../modules/azurerm_sql_database"
-#   sql_server_name     = "todosqlserver008"
-#   resource_group_name = "rg-todoapp"
-#   sql_database_name   = "tododb"
-# }
-
-module "key_vault" {
-  source              = "../../modules/azurerm_key_vault"
-  key_vault_name      = "sonamjikitijori"
+  resource_group_name  = "dev-rg-todoapp"
+  location             = "centralindia"
+  vm_name              = "pinki-vm"
+  vm_size              = "Standard_B1s"
+  admin_username       = "devopsadmin"
+  admin_password       = "Admin@1234567"
+  image_publisher      = "Canonical"
+  image_offer          = "0001-com-ubuntu-server-focal"
+  image_sku            = "20_04-lts"
+  image_version        = "latest"
+  nic_name             = "dev-nic-pinki"
+  frontend_ip_name     = "dev-pip-todoapp-lb"
+  vnet_name            = "dev-vnet-todoapp"
+  frontend_subnet_name = "dev-frontend-subnet"
+  nsg_name = "pinki-nsg"
+}
+module "public_ip_lb" {
+  source              = "../../modules/azurerm_public_ip"
+  public_ip_name      = "loadbalancer_ip"
   location            = "centralindia"
   resource_group_name = "dev-rg-todoapp"
+  allocation_method   = "Static"
 }
 
-module "vm_password" {
-  source              = "../../modules/azurerm_key_vault_secret"
-  depends_on          = [module.key_vault]
-  key_vault_name      = "sonamjikitijori"
-  resource_group_name = "dev-rg-todoapp"
-  secret_name         = "vm-password"
-  secret_value        = "P@ssw01rd@123"
+module "lb" {
+  depends_on          = [module.public_ip_lb]
+  source              = "../../modules/azurerm_loadbalancer"
+ }
+
+module "chinki_association" {
+  source              = "../../modules/azurerm_nic_association"
+  ip_configuration_name = "internal"
+  nic_name            = "dev-nic-chinki"
+  rg_name             = "dev-rg-todoapp"
+  pool_name           = "BackendAddressPool"
+  lb_name             = "TestLoadBalancer"
+}
+module "pinki_association" {
+  depends_on          = [module.pinki_vm, module.lb]
+  source              = "../../modules/azurerm_nic_association"
+  ip_configuration_name = "internal"
+  nic_name            = "dev-nic-pinki"
+  rg_name             = "dev-rg-todoapp"
+  pool_name           = "BackendAddressPool"
+  lb_name             = "TestLoadBalancer"
 }
 
-module "vm_username" {
-  source              = "../../modules/azurerm_key_vault_secret"
-  depends_on          = [module.key_vault]
-  key_vault_name      = "sonamjikitijori"
+module "bastion_subnet" {
+  source              = "../../modules/azurerm_subnet"
   resource_group_name = "dev-rg-todoapp"
-  secret_name         = "dev-vm-username"
-  secret_value        = "devopsadmin"
+  virtual_network_name= "dev-vnet-todoapp"
+  subnet_name         = "AzureBastionSubnet"
+  address_prefixes    = ["10.0.2.0/27"]
 }
+
+module "public_ip_bastion" {
+  source              = "../../modules/azurerm_public_ip"
+  public_ip_name      = "dev-bastion-pip"
+  location            = "centralindia"
+  resource_group_name = "dev-rg-todoapp"
+  allocation_method   = "Static"
+  sku                 = "Standard"
+}
+module "bastion" {
+  source              = "../../modules/azurerm_bastion"
+  bastion_name        = "dev-bastion"
+  location            = "centralindia"
+  resource_group_name = "dev-rg-todoapp"
+  subnet_id           = module.bastion_subnet.subnet_id
+  public_ip_name     = "dev-bastion-pip"
+}
+
+
 

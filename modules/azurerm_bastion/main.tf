@@ -6,6 +6,6 @@ resource "azurerm_bastion_host" "example" {
   ip_configuration {
     name                 = "configuration"
     subnet_id            = var.subnet_id
-    public_ip_address_id = var.public_ip_address_id
+    public_ip_address_id = data.azurerm_public_ip.pip.id
   }
 }

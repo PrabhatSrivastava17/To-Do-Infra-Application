@@ -18,3 +18,16 @@ variable "allocation_method" {
   type        = string
   default     = "Static"
 }
+variable "sku" {
+  description = "The SKU of the Public IP. Can be 'Basic' or 'Standard'."
+  type        = string
+  default     = "Standard"
+  
+}
+
+variable "tags" {
+  description = "A map of tags to assign to the resource."
+  type        = map(string)
+  default     = {}
+}
+
